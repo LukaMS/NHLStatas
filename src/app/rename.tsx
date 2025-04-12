@@ -31,7 +31,7 @@ export default function HomeScreen() {
         <StatusBar style="auto" />
       </SafeAreaView>
     );
-  }
+  } 
 
   if (error) {
     return (
@@ -67,8 +67,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
-    marginLeft:400,
-    marginRight:400,
   },
   header: {
     fontSize: 24,

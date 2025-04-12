@@ -1,5 +1,5 @@
 import { StyleSheet, View, Text } from 'react-native';
-import TeamLogo from './TeamLogo/TeamLogo.native';
+import TeamLogo from './TeamLogo';
 
 export default function TeamRow({ name, wins, losses, otl, points, gb, logo }) {
     return (
