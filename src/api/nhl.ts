@@ -62,9 +62,9 @@ export async function fetchStandings(): Promise<DivisionStandings[]> {
   }
 }
 
-export async function fetchScores(): Promise<any[]> {
-  const today = new Date().toISOString().slice(0, 10);
-  const baseUrl = `https://api-web.nhle.com/v1/scoreboard/${today}`;
+export async function fetchScores(date?: string): Promise<any[]> {
+  const targetDate = date || new Date().toISOString().slice(0, 10);
+  const baseUrl = `https://api-web.nhle.com/v1/scoreboard/${targetDate}`;
   const url = Platform.OS === 'web'
     ? `https://cors-anywhere.herokuapp.com/${baseUrl}`
     : baseUrl;
@@ -75,7 +75,7 @@ export async function fetchScores(): Promise<any[]> {
       throw new Error(`Error fetching scores: ${response.statusText}`);
     }
     const data = await response.json();
-    const games = data.gamesByDate?.find((d: any) => d.date === today)?.games || [];
+    const games = data.gamesByDate?.find((d: any) => d.date === targetDate)?.games || [];
     return games;
   } catch (error) {
     console.error('Error fetching NHL scores:', error);
