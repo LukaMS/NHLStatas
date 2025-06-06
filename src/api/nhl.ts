@@ -101,9 +101,17 @@ export async function fetchTeamSchedule(team: string): Promise<any[]> {
   }
 }
 
-export async function fetchTeamRoster(team: string): Promise<any> {
-  const season = '20242025';
-  const baseUrl = `https://api-web.nhle.com/v1/roster/${team}/${season}`;
+export function getCurrentSeason(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const startYear = month >= 8 ? year : year - 1;
+  return `${startYear}${startYear + 1}`;
+}
+
+export async function fetchTeamRoster(team: string, season?: string): Promise<any> {
+  const targetSeason = season || getCurrentSeason();
+  const baseUrl = `https://api-web.nhle.com/v1/roster/${team}/${targetSeason}`;
   const url = Platform.OS === 'web'
     ? `https://cors-anywhere.herokuapp.com/${baseUrl}`
     : baseUrl;
