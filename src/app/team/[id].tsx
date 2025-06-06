@@ -55,7 +55,7 @@ export default function TeamScreen() {
         </View>
         {roster && (
           <View>
-            {['forwards', 'defense', 'goalies'].map((grp) =>
+            {['forwards', 'defensemen', 'goalies'].map((grp) =>
               roster[grp] ? (
                 <View key={grp} style={styles.rosterSection}>
                   <Text style={styles.sectionHeader}>
