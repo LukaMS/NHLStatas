@@ -54,6 +54,22 @@ export default function GameScreen() {
     });
   }
 
+  const periodScores: { period: number; home: number; away: number }[] = [];
+  if (game?.summary?.scoring) {
+    game.summary.scoring.forEach((period: any) => {
+      let home = 0;
+      let away = 0;
+      period.goals.forEach((goal: any) => {
+        if (goal.teamAbbrev.default === game.homeTeam.abbrev) {
+          home += 1;
+        } else if (goal.teamAbbrev.default === game.awayTeam.abbrev) {
+          away += 1;
+        }
+      });
+      periodScores.push({ period: period.periodDescriptor.number, home, away });
+    });
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.content}>
@@ -81,6 +97,29 @@ export default function GameScreen() {
         {scoringPlays.length === 0 && (
           <Text style={styles.goalText}>No goals yet.</Text>
         )}
+
+        <Text style={styles.sectionHeader}>Game Status</Text>
+        <Text style={styles.detailText}>{game.gameState}</Text>
+
+        <Text style={styles.sectionHeader}>Period Scores</Text>
+        <View style={styles.tableRow}>
+          <Text style={[styles.tableCell, styles.headerCell]}>P</Text>
+          <Text style={[styles.tableCell, styles.headerCell]}>{game.awayTeam.abbrev}</Text>
+          <Text style={[styles.tableCell, styles.headerCell]}>{game.homeTeam.abbrev}</Text>
+        </View>
+        {periodScores.map((p) => (
+          <View key={p.period} style={styles.tableRow}>
+            <Text style={styles.tableCell}>{p.period}</Text>
+            <Text style={styles.tableCell}>{p.away}</Text>
+            <Text style={styles.tableCell}>{p.home}</Text>
+          </View>
+        ))}
+
+        <Text style={styles.sectionHeader}>Shots on Goal</Text>
+        <Text style={styles.detailText}>
+          {game.awayTeam.abbrev}: {game.awayTeam.sog} &nbsp;&nbsp;
+          {game.homeTeam.abbrev}: {game.homeTeam.sog}
+        </Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -126,6 +165,22 @@ const styles = StyleSheet.create({
   },
   goalText: {
     fontSize: 16,
+  },
+  detailText: {
+    fontSize: 16,
+    marginBottom: 8,
+  },
+  tableRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  tableCell: {
+    flex: 1,
+    textAlign: 'center',
+  },
+  headerCell: {
+    fontWeight: 'bold',
   },
   loading: {
     marginTop: 50,
