@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
+import TeamLogo from '@/components/TeamLogo';
 import { useLocalSearchParams } from 'expo-router';
 import { fetchTeamRoster, fetchTeamSchedule } from '@/api/nhl';
 
 export default function TeamScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const logoUri = `https://assets.nhle.com/logos/nhl/svg/${id}_light.svg`;
   const [schedule, setSchedule] = useState<any[]>([]);
   const [roster, setRoster] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -47,20 +49,38 @@ export default function TeamScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.header}>{id} Roster</Text>
+        <View style={styles.headerRow}>
+          <TeamLogo uri={logoUri} style={styles.teamLogo} />
+          <Text style={styles.headerText}>{id} Roster</Text>
+        </View>
         {roster && (
-          <View style={styles.section}>
-            {['forwards','defense','goalies'].map((grp) => roster[grp] && roster[grp].map((p: any) => (
-              <Text key={p.id} style={styles.text}>{p.sweaterNumber} - {p.firstName.default} {p.lastName.default}</Text>
-            )))}
+          <View>
+            {['forwards', 'defense', 'goalies'].map((grp) =>
+              roster[grp] ? (
+                <View key={grp} style={styles.rosterSection}>
+                  <Text style={styles.sectionHeader}>
+                    {grp.charAt(0).toUpperCase() + grp.slice(1)}
+                  </Text>
+                  {roster[grp].map((p: any) => (
+                    <Text key={p.id} style={styles.text}>
+                      {p.sweaterNumber} - {p.firstName.default} {p.lastName.default}
+                    </Text>
+                  ))}
+                </View>
+              ) : null
+            )}
           </View>
         )}
-        <Text style={styles.header}>Schedule</Text>
-        {schedule.map((g) => (
-          <Text key={g.id} style={styles.text}>
-            {g.gameDate}: {g.awayTeam.abbrev} @ {g.homeTeam.abbrev}
-          </Text>
-        ))}
+        <Text style={styles.sectionHeader}>Schedule</Text>
+        <View style={styles.section}>
+          {schedule.map((g) => (
+            <View key={g.id} style={styles.scheduleItem}>
+              <Text style={styles.text}>
+                {g.gameDate}: {g.awayTeam.abbrev} @ {g.homeTeam.abbrev}
+              </Text>
+            </View>
+          ))}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -74,11 +94,33 @@ const styles = StyleSheet.create({
   content: {
     padding: 20,
   },
-  header: {
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  teamLogo: {
+    marginRight: 8,
+  },
+  headerText: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 10,
     textAlign: 'center',
+  },
+  sectionHeader: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 4,
+    paddingTop: 10,
+  },
+  rosterSection: {
+    marginBottom: 16,
+  },
+  scheduleItem: {
+    paddingVertical: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#ccc',
   },
   section: {
     marginBottom: 20,
