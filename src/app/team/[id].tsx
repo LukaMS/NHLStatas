@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
 import TeamLogo from '@/components/TeamLogo';
 import { useLocalSearchParams } from 'expo-router';
-import { fetchTeamRoster, fetchTeamSchedule } from '@/api/nhl';
+import { fetchTeamRoster, fetchTeamSchedule, getCurrentSeason } from '@/api/nhl';
 
 export default function TeamScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -15,9 +15,10 @@ export default function TeamScreen() {
   useEffect(() => {
     async function load() {
       try {
+        const season = getCurrentSeason();
         const [s, r] = await Promise.all([
           fetchTeamSchedule(id as string),
-          fetchTeamRoster(id as string),
+          fetchTeamRoster(id as string, season),
         ]);
         setSchedule(s);
         setRoster(r);
