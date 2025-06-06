@@ -3,7 +3,7 @@ import { ActivityIndicator, SafeAreaView, ScrollView, StyleSheet, Text, View } f
 import { StatusBar } from 'expo-status-bar';
 import DivisionBox from '@/components/DivisionBox';
 import { DivisionStandings } from '@/types';
-import { fetchStandings } from '@/api/nlh';
+import { fetchStandings } from '@/api/nhl';
 
 export default function HomeScreen() {
   const [standings, setStandings] = useState<DivisionStandings[]>([]);
