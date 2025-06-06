@@ -118,3 +118,21 @@ export async function fetchTeamRoster(team: string): Promise<any> {
     throw error;
   }
 }
+
+export async function fetchGameDetails(gameId: string): Promise<any> {
+  const baseUrl = `https://api-web.nhle.com/v1/gamecenter/${gameId}/landing`;
+  const url =
+    Platform.OS === 'web'
+      ? `https://cors-anywhere.herokuapp.com/${baseUrl}`
+      : baseUrl;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Error fetching game details: ${response.statusText}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching game details:', error);
+    throw error;
+  }
+}
