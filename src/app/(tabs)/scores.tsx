@@ -1,16 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
+import { SafeAreaView, ScrollView, StyleSheet, Text, View, ActivityIndicator, Pressable } from 'react-native';
+import TeamLogo from '@/components/TeamLogo';
 import { fetchScores } from '@/api/nhl';
 
 export default function ScoresScreen() {
   const [games, setGames] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
+  const formattedDate = selectedDate.toISOString().slice(0, 10);
 
   useEffect(() => {
     async function load() {
+      setLoading(true);
       try {
-        const data = await fetchScores();
+        const data = await fetchScores(formattedDate);
         setGames(data);
       } catch (err: any) {
         setError(err.message || 'Failed to load scores.');
@@ -19,7 +24,7 @@ export default function ScoresScreen() {
       }
     }
     load();
-  }, []);
+  }, [formattedDate]);
 
   if (loading) {
     return (
@@ -37,16 +42,45 @@ export default function ScoresScreen() {
     );
   }
 
+  const changeDate = (days: number) => {
+    setSelectedDate((prev) => new Date(prev.getTime() + days * 24 * 60 * 60 * 1000));
+  };
+
+  const formatTime = (utc: string) => {
+    const d = new Date(utc);
+    return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  };
+
   return (
     <SafeAreaView style={styles.container}>
+      <View style={styles.dateRow}>
+        <Pressable onPress={() => changeDate(-1)} style={styles.dateButton}>
+          <Text>{'<'}</Text>
+        </Pressable>
+        <Text style={styles.dateText}>{formattedDate}</Text>
+        <Pressable onPress={() => changeDate(1)} style={styles.dateButton}>
+          <Text>{'>'}</Text>
+        </Pressable>
+      </View>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.header}>Today's Games</Text>
+        <Text style={styles.header}>Games</Text>
         {games.length === 0 && <Text>No games scheduled.</Text>}
         {games.map((game) => (
           <View key={game.id} style={styles.gameRow}>
-            <Text style={styles.gameText}>
-              {game.awayTeam.abbrev} {game.awayTeam.score} @ {game.homeTeam.abbrev} {game.homeTeam.score}
-            </Text>
+            <View style={styles.teamColumn}>
+              <TeamLogo uri={game.awayTeam.logo} />
+              <Text style={styles.teamText}>{game.awayTeam.abbrev}</Text>
+            </View>
+            <View style={styles.centerColumn}>
+              <Text style={styles.scoreText}>
+                {game.awayTeam.score} - {game.homeTeam.score}
+              </Text>
+              <Text style={styles.timeText}>{formatTime(game.startTimeUTC)}</Text>
+            </View>
+            <View style={styles.teamColumn}>
+              <TeamLogo uri={game.homeTeam.logo} />
+              <Text style={styles.teamText}>{game.homeTeam.abbrev}</Text>
+            </View>
           </View>
         ))}
       </ScrollView>
@@ -68,14 +102,46 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: 'center',
   },
+  dateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+  },
+  dateButton: {
+    paddingHorizontal: 12,
+  },
+  dateText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
   gameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
-  gameText: {
+  teamColumn: {
+    alignItems: 'center',
+    marginHorizontal: 8,
+  },
+  centerColumn: {
+    alignItems: 'center',
+    marginHorizontal: 8,
+  },
+  teamText: {
+    fontSize: 14,
+    marginTop: 4,
+  },
+  scoreText: {
     fontSize: 16,
-    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  timeText: {
+    fontSize: 12,
+    color: '#666',
   },
   loading: {
     marginTop: 50,
