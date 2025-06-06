@@ -1,5 +1,6 @@
 export type Team = {
     name: string,
+    abbr: string,
     wins: number,
     losses: number,
     otl: number,
