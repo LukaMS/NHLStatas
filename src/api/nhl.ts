@@ -26,6 +26,7 @@ export async function fetchStandings(): Promise<DivisionStandings[]> {
       // Map the record into our Team structure
       const team: Team = {
         name: record.teamName.default,
+        abbr: record.teamAbbrev?.default || '',
         wins: record.wins,
         losses: record.losses,
         otl: record.otLosses,
@@ -57,6 +58,63 @@ export async function fetchStandings(): Promise<DivisionStandings[]> {
     return divisions;
   } catch (error) {
     console.error('Error fetching NHL standings:', error);
+    throw error;
+  }
+}
+
+export async function fetchScores(): Promise<any[]> {
+  const today = new Date().toISOString().slice(0, 10);
+  const baseUrl = `https://api-web.nhle.com/v1/scoreboard/${today}`;
+  const url = Platform.OS === 'web'
+    ? `https://cors-anywhere.herokuapp.com/${baseUrl}`
+    : baseUrl;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Error fetching scores: ${response.statusText}`);
+    }
+    const data = await response.json();
+    const games = data.gamesByDate?.find((d: any) => d.date === today)?.games || [];
+    return games;
+  } catch (error) {
+    console.error('Error fetching NHL scores:', error);
+    throw error;
+  }
+}
+
+export async function fetchTeamSchedule(team: string): Promise<any[]> {
+  const baseUrl = `https://api-web.nhle.com/v1/club-schedule-season/${team}/now`;
+  const url = Platform.OS === 'web'
+    ? `https://cors-anywhere.herokuapp.com/${baseUrl}`
+    : baseUrl;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Error fetching schedule: ${response.statusText}`);
+    }
+    const data = await response.json();
+    return data.games || [];
+  } catch (error) {
+    console.error('Error fetching team schedule:', error);
+    throw error;
+  }
+}
+
+export async function fetchTeamRoster(team: string): Promise<any> {
+  const season = '20242025';
+  const baseUrl = `https://api-web.nhle.com/v1/roster/${team}/${season}`;
+  const url = Platform.OS === 'web'
+    ? `https://cors-anywhere.herokuapp.com/${baseUrl}`
+    : baseUrl;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Error fetching roster: ${response.statusText}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching team roster:', error);
     throw error;
   }
 }

@@ -1,9 +1,11 @@
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text, Pressable } from 'react-native';
+import { Link } from 'expo-router';
 import TeamLogo from './TeamLogo';
 
-export default function TeamRow({ name, wins, losses, otl, points, gb, logo }) {
+export default function TeamRow({ name, abbr, wins, losses, otl, points, gb, logo }) {
     return (
-        <View style={styles.teamRow}>
+        <Link href={`/team/${abbr}`} asChild>
+        <Pressable style={styles.teamRow}>
           <View style={styles.logoContainer}>
           <TeamLogo uri={logo} />
           </View>
@@ -13,7 +15,8 @@ export default function TeamRow({ name, wins, losses, otl, points, gb, logo }) {
           <Text style={styles.statText}>{otl}</Text>
           <Text style={styles.statText}>{points}</Text>
           <Text style={styles.statText}>{gb}</Text>
-        </View>
+        </Pressable>
+        </Link>
       );
 }
 

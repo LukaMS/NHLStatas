@@ -17,9 +17,10 @@ export default function DivisionBox({ divisionName, teams }) {
             <Text style={styles.statsHeaderText}>GB</Text>
           </View>
           {teams.map((team, index) => (
-            <TeamRow 
+            <TeamRow
               key={index}
               name={team.name}
+              abbr={team.abbr}
               wins={team.wins}
               losses={team.losses}
               otl={team.otl}
