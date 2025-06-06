@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, View, ActivityIndicator, Pressable } from 'react-native';
+import { Link } from 'expo-router';
 import TeamLogo from '@/components/TeamLogo';
 import { fetchScores } from '@/api/nhl';
 
@@ -66,22 +67,24 @@ export default function ScoresScreen() {
         <Text style={styles.header}>Games</Text>
         {games.length === 0 && <Text>No games scheduled.</Text>}
         {games.map((game) => (
-          <View key={game.id} style={styles.gameRow}>
-            <View style={styles.teamColumn}>
-              <TeamLogo uri={game.awayTeam.logo} />
-              <Text style={styles.teamText}>{game.awayTeam.abbrev}</Text>
-            </View>
-            <View style={styles.centerColumn}>
-              <Text style={styles.scoreText}>
-                {game.awayTeam.score} - {game.homeTeam.score}
-              </Text>
-              <Text style={styles.timeText}>{formatTime(game.startTimeUTC)}</Text>
-            </View>
-            <View style={styles.teamColumn}>
-              <TeamLogo uri={game.homeTeam.logo} />
-              <Text style={styles.teamText}>{game.homeTeam.abbrev}</Text>
-            </View>
-          </View>
+          <Link key={game.id} href={`/game/${game.id}`} asChild>
+            <Pressable style={styles.gameRow}>
+              <View style={styles.teamColumn}>
+                <TeamLogo uri={game.awayTeam.logo} />
+                <Text style={styles.teamText}>{game.awayTeam.abbrev}</Text>
+              </View>
+              <View style={styles.centerColumn}>
+                <Text style={styles.scoreText}>
+                  {game.awayTeam.score} - {game.homeTeam.score}
+                </Text>
+                <Text style={styles.timeText}>{formatTime(game.startTimeUTC)}</Text>
+              </View>
+              <View style={styles.teamColumn}>
+                <TeamLogo uri={game.homeTeam.logo} />
+                <Text style={styles.teamText}>{game.homeTeam.abbrev}</Text>
+              </View>
+            </Pressable>
+          </Link>
         ))}
       </ScrollView>
     </SafeAreaView>
