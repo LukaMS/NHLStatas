@@ -144,3 +144,58 @@ export async function fetchGameDetails(gameId: string): Promise<any> {
     throw error;
   }
 }
+
+export async function fetchTeamStats(team: string): Promise<{wins:number; losses:number; otl:number; points:number}> {
+  const baseUrl = 'https://api-web.nhle.com/v1/standings/now';
+  const url = Platform.OS === 'web'
+    ? `https://cors-anywhere.herokuapp.com/${baseUrl}`
+    : baseUrl;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Error fetching standings: ${response.statusText}`);
+  }
+  const data = await response.json();
+  const record = data.standings.find((r: any) => r.teamAbbrev?.default === team);
+  if (!record) throw new Error('Team not found in standings');
+  return {
+    wins: record.wins,
+    losses: record.losses,
+    otl: record.otLosses,
+    points: record.points,
+  };
+}
+
+async function fetchPlayerStats(playerId: number, season: string) {
+  const baseUrl = `https://api-web.nhle.com/v1/player/${playerId}/landing`;
+  const url = Platform.OS === 'web'
+    ? `https://cors-anywhere.herokuapp.com/${baseUrl}`
+    : baseUrl;
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`Error fetching player stats: ${res.statusText}`);
+  }
+  const data = await res.json();
+  const totals = (data.seasonTotals || []).find(
+    (s: any) => s.season === Number(season) && s.gameTypeId === 2
+  );
+  return {
+    id: playerId,
+    firstName: data.firstName?.default || '',
+    lastName: data.lastName?.default || '',
+    goals: totals?.goals || 0,
+    assists: totals?.assists || 0,
+    points: totals?.points || 0,
+  };
+}
+
+export async function fetchTopScorers(team: string, season?: string, limit = 3) {
+  const targetSeason = season || getCurrentSeason();
+  const roster = await fetchTeamRoster(team, targetSeason);
+  const skaters = [...(roster.forwards || []), ...(roster.defensemen || [])];
+  const stats = await Promise.all(
+    skaters.map((p: any) => fetchPlayerStats(p.id, targetSeason).catch(() => null))
+  );
+  const valid = stats.filter(Boolean) as any[];
+  valid.sort((a, b) => b.points - a.points);
+  return valid.slice(0, limit);
+}

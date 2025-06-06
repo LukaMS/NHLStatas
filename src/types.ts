@@ -13,3 +13,12 @@ export type DivisionStandings = {
     divisionName: string,
     teams: Team[],
 }
+
+export type PlayerStat = {
+    id: number,
+    firstName: string,
+    lastName: string,
+    goals: number,
+    assists: number,
+    points: number,
+}

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
 import TeamLogo from '@/components/TeamLogo';
 import { useLocalSearchParams } from 'expo-router';
-import { fetchTeamRoster, fetchTeamSchedule, getCurrentSeason } from '@/api/nhl';
+import { fetchTeamRoster, fetchTeamSchedule, getCurrentSeason, fetchTeamStats, fetchTopScorers } from '@/api/nhl';
 
 export default function TeamScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -11,17 +11,23 @@ export default function TeamScreen() {
   const [roster, setRoster] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [teamStats, setTeamStats] = useState<{wins:number; losses:number; otl:number; points:number} | null>(null);
+  const [topScorers, setTopScorers] = useState<any[]>([]);
 
   useEffect(() => {
     async function load() {
       try {
         const season = getCurrentSeason();
-        const [s, r] = await Promise.all([
+        const [s, r, stats, scorers] = await Promise.all([
           fetchTeamSchedule(id as string),
           fetchTeamRoster(id as string, season),
+          fetchTeamStats(id as string),
+          fetchTopScorers(id as string, season),
         ]);
         setSchedule(s);
         setRoster(r);
+        setTeamStats(stats);
+        setTopScorers(scorers);
       } catch (err: any) {
         setError(err.message || 'Failed to load team info.');
       } finally {
@@ -54,6 +60,20 @@ export default function TeamScreen() {
           <TeamLogo uri={logoUri} style={styles.teamLogo} />
           <Text style={styles.headerText}>{id} Roster</Text>
         </View>
+        {teamStats && (
+          <Text style={styles.summaryText}>
+            Record: {teamStats.wins}-{teamStats.losses}-{teamStats.otl} ({teamStats.points} pts)
+          </Text>
+        )}
+        {topScorers.length > 0 && (
+          <View style={styles.summarySection}>
+            {topScorers.map((p) => (
+              <Text key={p.id} style={styles.text}>
+                {p.firstName} {p.lastName}: {p.points} pts
+              </Text>
+            ))}
+          </View>
+        )}
         {roster && (
           <View>
             {['forwards', 'defensemen', 'goalies'].map((grp) =>
@@ -138,5 +158,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 16,
     color: 'red',
+  },
+  summaryText: {
+    fontSize: 16,
+    fontWeight: '500',
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  summarySection: {
+    marginBottom: 8,
+    alignItems: 'center',
   },
 });
